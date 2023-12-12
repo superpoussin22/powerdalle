@@ -63,10 +63,10 @@ app.post('/generate-image', async (req, res) => {
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    const response = await fetch(`${process.env.OPENAI_HOST}openai/deployments/${process.env.AZURE_DEPLOYMENT}/images/generations?api-version=${process.env.AZURE_API_VERSION}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'api-key': `${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
