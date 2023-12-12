@@ -61,9 +61,21 @@ app.post('/generate-image', async (req, res) => {
     }
     return res.status(500).send(data);
   }
+  
+  let platform = (process.env.PLATFORM || 'openai').toLocaleLowerCase();
+  let deployments = process.env.AZURE_DEPLOYMENT || 'dall-e-3';
+  let api_version = process.env.AZURE_API_VERSION || '2023-12-01-preview';
 
-  try {
-    const response = await fetch(`${process.env.OPENAI_HOST}openai/deployments/${process.env.AZURE_DEPLOYMENT}/images/generations?api-version=${process.env.AZURE_API_VERSION}`, {
+    try {
+      let url;
+    switch(platform) {
+      case 'azure':
+          url = `${process.env.OPENAI_HOST}openai/deployments/${deployments}/images/generations?api-version=${api_version}`;
+          break;
+      default:
+          url = 'https://api.openai.com/v1/images/generations'/* default url */;
+    }
+    const response = await fetch(`${url}`, {
       method: 'POST',
       headers: {
         'api-key': `${process.env.OPENAI_API_KEY}`,
