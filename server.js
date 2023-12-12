@@ -68,28 +68,44 @@ app.post('/generate-image', async (req, res) => {
 
     try {
       let url;
+      let response;
     switch(platform) {
       case 'azure':
           url = `${process.env.OPENAI_HOST}openai/deployments/${deployments}/images/generations?api-version=${api_version}`;
+          response = await fetch(`${url}`, {
+            method: 'POST',
+            headers: {
+              'api-key': `${process.env.OPENAI_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              prompt: prompt,
+              n: 1,
+              size: size,
+              style: style,
+              quality: quality,
+              model: model
+            }),
+          });
           break;
       default:
           url = 'https://api.openai.com/v1/images/generations'/* default url */;
+          response = await fetch('https://api.openai.com/v1/images/generations', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              prompt: prompt,
+              n: 1,
+              size: size,
+              style: style,
+              quality: quality,
+              model: model
+            }),
+          });
     }
-    const response = await fetch(`${url}`, {
-      method: 'POST',
-      headers: {
-        'api-key': `${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt: prompt,
-        n: 1,
-        size: size,
-        style: style,
-        quality: quality,
-        model: model
-      }),
-    });
 
     const data = await response.json();
 
