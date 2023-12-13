@@ -38,7 +38,6 @@ db.serialize(() => {
   `);
 });
 
-
 app.post('/generate-image', async (req, res) => {
 
   const { prompt, style, size, quality } = req.body;
@@ -120,6 +119,7 @@ app.post('/generate-image', async (req, res) => {
     const revisedPrompt = data.data[0].revised_prompt;
     let localImageUrl;
     let dateTime;
+    let shortPrompt;
     let guid;
     
     axios({
@@ -130,9 +130,10 @@ app.post('/generate-image', async (req, res) => {
       .then(function (response) {
 
         dateTime = getFormattedDateTime();
+        shortPrompt = promptToFilenamePart(prompt);
         guid = crypto.randomBytes(4).toString('hex');
         
-        const filename = `${dateTime}-${guid}.png`;
+        const filename = `${dateTime}-${shortPrompt}-${guid}.png`;
         const filepath = path.join(__dirname, 'images', filename);
         localImageUrl = `/images/${filename}`;
 
@@ -163,7 +164,7 @@ app.post('/generate-image', async (req, res) => {
       .then(lastID => {
 
         if (saveJsonWithImages) {
-          const jsonFilename = `${dateTime}-${guid}.json`;
+          const jsonFilename = `${dateTime}-${shortPrompt}-${guid}.json`;
           const jsonFilepath = path.join(__dirname, 'images', jsonFilename);
           const jsonData = JSON.stringify({
             prompt: prompt,
@@ -354,4 +355,14 @@ function getFormattedDateTime() {
     const seconds = pad(dateTimeNow.getUTCSeconds());
   
     return `${year}-${month}-${date}-${hours}-${minutes}-${seconds}`;
+}
+
+function promptToFilenamePart(prompt) {
+  const maxLength = 50;
+  let s = prompt ? prompt : '';
+  s = s.toLowerCase();
+  s = s.replace(/[^a-z0-9]/g, '-');
+  s = s.replace(/-+/g, '-').replace(/^-/, '').replace(/-$/, '');
+  s = s.substring(0, maxLength);
+  return s;
 }
